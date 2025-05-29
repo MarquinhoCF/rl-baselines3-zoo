@@ -609,6 +609,34 @@ food_delivery_gym/FoodDelivery-initial-obj2-v0:
   gae_lambda: 0.95
   normalize: true
 
+food_delivery_gym/FoodDelivery-initial-obj3-v0:
+  n_envs: 4
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  learning_rate: 3.0e-4
+  ent_coef: 0.0
+  clip_range: 0.2
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  normalize: true
+
+food_delivery_gym/FoodDelivery-initial-obj4-v0:
+  n_envs: 4
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  learning_rate: 3.0e-4
+  ent_coef: 0.0
+  clip_range: 0.2
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  normalize: true
+
 food_delivery_gym/FoodDelivery-medium-obj1-v0:
   n_envs: 4
   n_timesteps: 100000
@@ -637,6 +665,34 @@ food_delivery_gym/FoodDelivery-medium-obj2-v0:
   gae_lambda: 0.95
   normalize: true
 
+food_delivery_gym/FoodDelivery-medium-obj3-v0:
+  n_envs: 4
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  learning_rate: 3.0e-4
+  ent_coef: 0.0
+  clip_range: 0.2
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  normalize: true
+
+food_delivery_gym/FoodDelivery-medium-obj4-v0:
+  n_envs: 4
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  learning_rate: 3.0e-4
+  ent_coef: 0.0
+  clip_range: 0.2
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  normalize: true
+
 food_delivery_gym/FoodDelivery-complex-obj1-v0:
   n_envs: 1
   n_timesteps: 100000
@@ -652,6 +708,34 @@ food_delivery_gym/FoodDelivery-complex-obj1-v0:
   normalize: true
 
 food_delivery_gym/FoodDelivery-complex-obj2-v0:
+  n_envs: 1
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  learning_rate: 3.0e-4
+  ent_coef: 0.0
+  clip_range: 0.2
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  normalize: true
+
+food_delivery_gym/FoodDelivery-complex-obj3-v0:
+  n_envs: 1
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  learning_rate: 3.0e-4
+  ent_coef: 0.0
+  clip_range: 0.2
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  normalize: true
+
+food_delivery_gym/FoodDelivery-complex-obj4-v0:
   n_envs: 1
   n_timesteps: 100000
   policy: 'MultiInputPolicy'
