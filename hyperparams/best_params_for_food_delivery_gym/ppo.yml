@@ -1,14 +1,72 @@
+# # Otimização final:
+
+# Otimização de hiperparâmetros do ambiente com objetivo 1 com normalização e 1.000.000 de passos por 200 trials
 food_delivery_gym/FoodDelivery-medium-obj1-v0:
   n_timesteps: 18000000
   policy: 'MultiInputPolicy'
   n_envs: 4 
-  learning_rate: 0.0012385994626143365
-  ent_coef: 4.346389035215521e-07
-  clip_range: 0.2
-  n_steps: 512
-  batch_size: 32
+  learning_rate: 0.0009742009357947689
+  ent_coef: 9.53697192932737e-07
+  clip_range: 0.3
+  n_steps: 256
+  batch_size: 16
   n_epochs: 1
-  gamma: 0.995774212877831459
-  gae_lambda: 0.9230863694972054
-  max_grad_norm: 0.5730007621571269
+  gamma: 0.9912696235841435
+  gae_lambda: 0.9936681407681269
+  max_grad_norm: 1.92598340602166
+  policy_kwargs: "dict(net_arch=dict(pi=[64], vf=[64]), activation_fn=nn.Tanh)"
   normalize: true
+
+# Otimização de hiperparâmetros do ambiente com objetivo 2 com normalização e 1.000.000 de passos por 200 trials
+food_delivery_gym/FoodDelivery-medium-obj2-v0:
+  n_timesteps: 18000000
+  policy: 'MultiInputPolicy'
+  n_envs: 4 
+  learning_rate: 1.3971195027500851e-05
+  ent_coef: 2.3016065325155215e-05
+  clip_range: 0.1
+  n_steps: 1024
+  batch_size: 8
+  n_epochs: 20
+  gamma: 0.9853901879025417
+  gae_lambda: 0.975997042675116
+  max_grad_norm: 1.362571608677646
+  policy_kwargs: "dict(net_arch=dict(pi=[256, 256], vf=[256, 256]), activation_fn=nn.Tanh)"
+  normalize: true
+
+
+# # Otimizações de Teste:
+
+# # Otimização de hiperparâmetros do ambiente sem normalizar com 1.000.000 de passos por 50 trials
+# food_delivery_gym/FoodDelivery-medium-obj1-v0:
+#   n_timesteps: 10000000
+#   policy: 'MultiInputPolicy'
+#   n_envs: 4 
+#   learning_rate: 8.110187140961812e-05
+#   ent_coef: 6.611612993784828e-06
+#   clip_range: 0.2
+#   n_steps: 512
+#   batch_size: 32
+#   n_epochs: 20
+#   gamma: 0.9983633683661667
+#   gae_lambda: 0.9432249472372363
+#   max_grad_norm: 1.9218758164203371
+#   policy_kwargs: "dict(net_arch=dict(pi=[256, 256], vf=[256, 256]), activation_fn=nn.ReLU)"
+#   normalize: false
+
+# # Otimização de hiperparâmetros com 1.500.000 de passos por 50 trials
+# food_delivery_gym/FoodDelivery-medium-obj1-v0:
+#   n_timesteps: 18000000
+#   policy: 'MultiInputPolicy'
+#   n_envs: 4 
+#   learning_rate: 0.0012385994626143365
+#   ent_coef: 4.346389035215521e-07
+#   clip_range: 0.2
+#   n_steps: 512
+#   batch_size: 32
+#   n_epochs: 1
+#   gamma: 0.995774212877831459
+#   gae_lambda: 0.9230863694972054
+#   max_grad_norm: 0.5730007621571269
+#   policy_kwargs: "dict(net_arch=dict(pi=[64], vf=[64]), activation_fn=nn.Tanh)"
+#   normalize: true
