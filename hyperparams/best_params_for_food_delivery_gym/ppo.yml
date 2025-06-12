@@ -34,6 +34,23 @@ food_delivery_gym/FoodDelivery-medium-obj2-v0:
   policy_kwargs: "dict(net_arch=dict(pi=[256, 256], vf=[256, 256]), activation_fn=nn.Tanh)"
   normalize: true
 
+# Otimização de hiperparâmetros do ambiente com objetivo 3 com normalização e 1.000.000 de passos por 200 trials
+food_delivery_gym/FoodDelivery-medium-obj3-v0:
+  n_timesteps: 18000000
+  policy: 'MultiInputPolicy'
+  n_envs: 4 
+  learning_rate: 0.0006906747318567277
+  ent_coef: 0.018839296414662848
+  clip_range: 0.2
+  n_steps: 4096
+  batch_size: 128
+  n_epochs: 20
+  gamma: 0.9984580058939658
+  gae_lambda: 0.9948249364811154
+  max_grad_norm: 1.9354851609206636
+  policy_kwargs: "dict(net_arch=dict(pi=[64], vf=[64]), activation_fn=nn.Tanh)"
+  normalize: true
+
 
 # # Otimizações de Teste:
 
