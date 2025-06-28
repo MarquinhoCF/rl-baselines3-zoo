@@ -4,8 +4,15 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from gymnasium.core import ObsType
+from gymnasium.wrappers import ResizeObservation
 from sb3_contrib.common.wrappers import TimeFeatureWrapper  # noqa: F401 (backward compatibility)
 from stable_baselines3.common.type_aliases import GymResetReturn, GymStepReturn
+
+
+# Convert to tuple, so it is compatible with YAML
+class YAMLCompatResizeObservation(ResizeObservation):
+    def __init__(self, env: gym.Env, shape: list[int]):
+        super().__init__(env, (shape[0], shape[1]))
 
 
 class TruncatedOnSuccessWrapper(gym.Wrapper):
@@ -304,8 +311,8 @@ class MaskVelocityWrapper(gym.ObservationWrapper):
         "MountainCar-v0": np.array([1]),
         "MountainCarContinuous-v0": np.array([1]),
         "Pendulum-v1": np.array([2]),
-        "LunarLander-v2": np.array([2, 3, 5]),
-        "LunarLanderContinuous-v2": np.array([2, 3, 5]),
+        "LunarLander-v3": np.array([2, 3, 5]),
+        "LunarLanderContinuous-v3": np.array([2, 3, 5]),
     }
 
     def __init__(self, env: gym.Env):
