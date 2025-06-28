@@ -6,6 +6,11 @@ from gymnasium.envs.registration import register, register_envs
 from rl_zoo3.wrappers import MaskVelocityWrapper
 
 try:
+    import food_delivery_gym
+except ImportError:
+    pass
+
+try:
     import pybullet_envs_gymnasium
 except ImportError:
     pass
