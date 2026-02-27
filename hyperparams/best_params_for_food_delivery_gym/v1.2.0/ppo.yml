@@ -1,0 +1,17 @@
+# Otimização de hiperparâmetros do ambiente com objetivo 1 com normalização e 1.000.000 de passos por 200 trials
+food_delivery_gym/FoodDelivery-medium-obj1-v0:
+  n_timesteps: 18000000
+  policy: 'MultiInputPolicy'
+  n_envs: 4 
+  learning_rate: 1.8230041749416346e-05
+  ent_coef: 0.042193314379129786
+  clip_range: 0.2
+  n_steps: 4096
+  batch_size: 32
+  n_epochs: 5
+  vf_coef: 0.5
+  gamma: 0.9967571709613668
+  gae_lambda: 0.9994631907941586
+  max_grad_norm: 1.794349957441538
+  policy_kwargs: "dict(net_arch=dict(pi=[64, 64], vf=[64, 64]), activation_fn=nn.Tanh)"
+  normalize: true
