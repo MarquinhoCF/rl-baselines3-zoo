@@ -623,6 +623,12 @@ food_delivery_gym/FoodDelivery-initial-obj11-v0:
   policy: 'MultiInputPolicy'
   normalize: true
 
+food_delivery_gym/FoodDelivery-initial-obj12-v0:
+  n_envs: 4
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  normalize: true
+
 food_delivery_gym/FoodDelivery-medium-obj1-v0:
   n_envs: 4
   n_timesteps: 100000
@@ -665,6 +671,12 @@ food_delivery_gym/FoodDelivery-medium-obj11-v0:
   policy: 'MultiInputPolicy'
   normalize: true
 
+food_delivery_gym/FoodDelivery-medium-obj12-v0:
+  n_envs: 4
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  normalize: true
+
 food_delivery_gym/FoodDelivery-complex-obj1-v0:
   n_envs: 4
   n_timesteps: 100000
@@ -702,6 +714,12 @@ food_delivery_gym/FoodDelivery-complex-obj8-v0:
   normalize: true
 
 food_delivery_gym/FoodDelivery-complex-obj11-v0:
+  n_envs: 4
+  n_timesteps: 100000
+  policy: 'MultiInputPolicy'
+  normalize: true
+
+food_delivery_gym/FoodDelivery-complex-obj12-v0:
   n_envs: 4
   n_timesteps: 100000
   policy: 'MultiInputPolicy'
