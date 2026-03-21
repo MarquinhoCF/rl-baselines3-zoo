@@ -34,7 +34,7 @@ def update_yaml(path):
 
     env_ids = sorted([
         env_id for env_id in gymnasium.envs.registry.keys()
-        if env_id.startswith("food_delivery_gym/")
+        if env_id.startswith("FoodDelivery-")
     ])
 
     new_content = header + "\n" + generate_env_entries(env_ids)

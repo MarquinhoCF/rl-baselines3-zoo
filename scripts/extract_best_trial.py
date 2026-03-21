@@ -1,40 +1,26 @@
 """
 extract_best_trial.py
 
-Analisa os trials de uma otimização de hiperparâmetros do Optuna, identifica
-o melhor trial e gera/atualiza o arquivo ppo.yml com os hiperparâmetros otimizados.
+Analisa os trials de uma otimização de hiperparâmetros (salvos localmente),
+identifica o melhor trial e gera/atualiza o arquivo ppo.yml com os
+hiperparâmetros otimizados.
 
-Modos de operação:
-  - Com SQLite  (--storage + --study-name): usa o Optuna para identificar o melhor
-    trial com precisão total, incluindo metadados de tempo e parâmetros amostrados.
-    O --trials-dir é opcional (necessário apenas para ler o best_model.zip).
+A pasta de trials é sempre <exp-dir>/optimization/, onde <exp-dir> é o
+diretório do experimento gerado pelo rl-baselines-zoo3 (ex: logs/ppo/CartPole-v1_1/).
 
-  - Sem SQLite  (--trials-dir obrigatório): varre todos os trial_N/evaluations.npz
-    localmente e identifica o melhor pela recompensa média do último checkpoint,
-    espelhando o critério do Optuna (eval_callback.last_mean_reward).
+A normalização é detectada automaticamente a partir dos arquivos presentes
+no diretório do experimento (config.yml, vecnormalize.pkl, etc.).
 
-O comentário do bloco YAML é gerado automaticamente a partir dos dados disponíveis.
-
-Uso mínimo com SQLite:
+Uso mínimo:
     python extract_best_trial.py \
-        --storage sqlite:///optuna_studies.db \
-        --study-name meu_estudo \
-        --env food_delivery_gym/FoodDelivery-medium-obj1-v0
-
-Uso mínimo sem SQLite:
-    python extract_best_trial.py \
-        --trials-dir logs/hyperparam_opt_ppo_food_delivery_medium_obj1 \
-        --env food_delivery_gym/FoodDelivery-medium-obj1-v0
+        --exp-dir logs/ppo/FoodDelivery-medium-obj1-v1_3
 
 Uso completo:
     python extract_best_trial.py \
-        --trials-dir logs/hyperparam_opt_ppo_food_delivery_medium_obj1 \
-        --storage sqlite:///optuna_studies.db \
-        --study-name meu_estudo \
-        --env food_delivery_gym/FoodDelivery-medium-obj1-v0 \
+        --exp-dir logs/ppo/FoodDelivery-medium-obj1-v1_3 \
+        --env FoodDelivery-medium-obj1-v1 \
         --n-timesteps 18000000 \
         --n-envs 4 \
-        --normalize \
         --output-dir hyperparams/best_params_for_food_delivery_gym
 """
 
@@ -51,22 +37,38 @@ from typing import Optional
 import numpy as np
 
 
-# ── Estrutura para resultado local (sem SQLite) ───────────────────────────────
+# ── Estrutura de resultado ────────────────────────────────────────────────────
 
 @dataclass
 class LocalTrialResult:
-    """Representa o melhor trial identificado apenas por arquivos locais."""
+    """Representa o melhor trial identificado a partir dos arquivos locais."""
     number: int
     best_mean_reward: float
     last_timestep: int
     num_evaluations: int
     num_valid_trials: int = 0
-    # Campos opcionais presentes apenas no modo Optuna
-    params: dict = field(default_factory=dict)
-    user_attrs: dict = field(default_factory=dict)
-    datetime_start: Optional[object] = None
-    datetime_complete: Optional[object] = None
-    state_name: str = "COMPLETE"
+
+
+# ── Detecção de normalização ──────────────────────────────────────────────────
+
+def detect_normalization(exp_dir: Path) -> bool:
+    """
+    Detecta automaticamente se a otimização foi feita com normalização.
+
+    O ExperimentManager salva um arquivo report_*.pkl na raiz do exp_dir
+    ao final de hyperparameters_optimization(). A presença desse arquivo
+    indica que a otimização foi concluída; o nome do arquivo carrega os
+    metadados do estudo (env, n_trials, n_timesteps, sampler, pruner).
+
+    Convenção adotada: se existir algum *.pkl na raiz do exp_dir,
+    considera-se que a otimização usou normalização.
+    """
+    pkl_files = list(exp_dir.glob("*.pkl"))
+    if pkl_files:
+        print(f"[Normalização] Arquivo de report detectado: {pkl_files[0].name} → True")
+        return True
+    print("[Normalização] Nenhum report *.pkl encontrado na raiz do exp_dir → False")
+    return False
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -86,7 +88,6 @@ def version_to_dir(version: str) -> str:
     Exemplos:
         0.0.3  → v0.0.x
         1.1.5  → v1.1.x
-        2.0.1  → v2.0.x
     """
     parts = version.split(".")
     if len(parts) >= 2:
@@ -94,20 +95,34 @@ def version_to_dir(version: str) -> str:
     return f"v{parts[0]}.x"
 
 
+def infer_env_id(exp_dir: Path) -> str:
+    """
+    Infere o env_id a partir do nome do diretório do experimento.
+
+    O rl-baselines-zoo3 gera pastas no formato  <env_name>_<run_id>[_<uuid>].
+    Remove o sufixo numérico (e UUID opcional) para obter o env_name.
+
+    Exemplos:
+        FoodDelivery-medium-obj1-v1_3         → FoodDelivery-medium-obj1-v1
+        FoodDelivery-medium-obj1-v1_3_abc123  → FoodDelivery-medium-obj1-v1
+        CartPole-v1_1                         → CartPole-v1
+    """
+    name = exp_dir.name
+    # Remove sufixo _<número> e possível _<uuid> no final
+    match = re.match(r"^(.+?)_\d+(_[0-9a-f\-]+)?$", name)
+    if match:
+        return match.group(1)
+    return name
+
 
 def build_comment(n_timesteps_per_trial: int, num_trials: int, normalize: bool) -> str:
-    """
-    Gera o comentário automaticamente a partir dos dados disponíveis.
-
-    Exemplo: "com normalização e 1.000.000 de passos por trial"
-    """
+    """Gera o comentário automaticamente a partir dos dados disponíveis."""
     parts = []
     if normalize:
         parts.append("com normalização")
     ts_fmt = f"{n_timesteps_per_trial:,}".replace(",", ".")
     parts.append(f"{ts_fmt} de passos por trial")
     return " e ".join(parts)
-
 
 
 def load_model_data_from_zip(zip_path: str) -> dict:
@@ -150,14 +165,14 @@ def extract_hyperparams_from_model_data(data: dict) -> dict:
 
         if isinstance(activation_fn, str):
             fn_lower = activation_fn.lower()
-            if "relu" in fn_lower and "leaky" not in fn_lower:
+            if "leakyrelu" in fn_lower or "leaky_relu" in fn_lower:
+                activation_fn_name = "nn.LeakyReLU"
+            elif "relu" in fn_lower:
                 activation_fn_name = "nn.ReLU"
             elif "tanh" in fn_lower:
                 activation_fn_name = "nn.Tanh"
-            elif "elu" in fn_lower and "leaky" not in fn_lower:
+            elif "elu" in fn_lower:
                 activation_fn_name = "nn.ELU"
-            elif "leakyrelu" in fn_lower or "leaky_relu" in fn_lower:
-                activation_fn_name = "nn.LeakyReLU"
             else:
                 activation_fn_name = activation_fn
         else:
@@ -224,7 +239,9 @@ def build_yaml_block(
 
     if net_arch:
         arch_str = format_net_arch(net_arch)
-        lines.append(f"  policy_kwargs: \"dict(net_arch={arch_str}, activation_fn={activation_fn_name})\"")
+        lines.append(
+            f"  policy_kwargs: \"dict(net_arch={arch_str}, activation_fn={activation_fn_name})\""
+        )
 
     if normalize:
         lines.append("  normalize: true")
@@ -240,35 +257,23 @@ def _extract_objective(env_id: str) -> str:
 
 # ── Lógica principal ──────────────────────────────────────────────────────────
 
-def load_study(storage: str, study_name: str):
-    """Carrega o estudo Optuna do banco SQLite. Importa optuna sob demanda."""
-    import optuna as _optuna
-    print(f"\n[Optuna] Carregando estudo '{study_name}' de '{storage}'...")
-    return _optuna.load_study(study_name=study_name, storage=storage)
-
-
-def scan_trials_locally(trials_dir: str) -> LocalTrialResult:
+def scan_trials_locally(trials_dir: Path) -> LocalTrialResult:
     """
     Varre todos os trial_N/evaluations.npz e retorna o melhor trial.
 
-    Critério de comparação: recompensa média do ÚLTIMO checkpoint de cada trial
-    (results[-1]), que é exatamente o valor que o Optuna recebe via
-    eval_callback.last_mean_reward no retorno de objective().
-    Isso garante que o modo local seleciona o mesmo trial que o Optuna
-    selecionaria como best_trial.
-
-    Nota: trials podados pelo Optuna terminam antes de 1.000.000 de steps,
-    portanto terão menos checkpoints — results[-1] será o último avaliado
-    antes do pruning, assim como ocorre no Optuna.
+    Critério: recompensa média do ÚLTIMO checkpoint de cada trial (results[-1]),
+    que espelha exatamente o valor retornado por objective() ao Optuna via
+    eval_callback.last_mean_reward.
     """
-    trials_path = Path(trials_dir)
     trial_dirs = sorted(
-        [d for d in trials_path.iterdir() if d.is_dir() and re.match(r"trial_\d+$", d.name)],
+        [d for d in trials_dir.iterdir() if d.is_dir() and re.match(r"trial_\d+$", d.name)],
         key=lambda d: int(d.name.split("_")[1]),
     )
 
     if not trial_dirs:
-        raise FileNotFoundError(f"Nenhum diretório trial_N encontrado em '{trials_dir}'.")
+        raise FileNotFoundError(
+            f"Nenhum diretório trial_N encontrado em '{trials_dir}'."
+        )
 
     print(f"\n[Local] Varrendo {len(trial_dirs)} trials em '{trials_dir}'...")
 
@@ -277,7 +282,7 @@ def scan_trials_locally(trials_dir: str) -> LocalTrialResult:
     best_last_timestep = 0
     best_num_evals = 0
     valid_count = 0
-    skipped = []
+    skipped: list[str] = []
 
     for trial_dir in trial_dirs:
         npz_path = trial_dir / "evaluations.npz"
@@ -287,10 +292,9 @@ def scan_trials_locally(trials_dir: str) -> LocalTrialResult:
 
         try:
             data = np.load(str(npz_path))
-            results = data["results"]       # shape: (n_evals, n_episodes)
-            timesteps = data["timesteps"]   # shape: (n_evals,)
+            results = data["results"]      # shape: (n_evals, n_episodes)
+            timesteps = data["timesteps"]  # shape: (n_evals,)
 
-            # Recompensa média do último checkpoint — espelha eval_callback.last_mean_reward
             last_mean = float(np.mean(results[-1]))
             last_timestep = int(timesteps[-1])
             num_evals = len(timesteps)
@@ -308,17 +312,18 @@ def scan_trials_locally(trials_dir: str) -> LocalTrialResult:
             skipped.append(f"{trial_dir.name} (erro: {e})")
 
     if skipped:
-        print(f"[Local] Trials ignorados ({len(skipped)}): {', '.join(skipped[:10])}"
-              + (" ..." if len(skipped) > 10 else ""))
+        preview = ", ".join(skipped[:10]) + (" ..." if len(skipped) > 10 else "")
+        print(f"[Local] Trials ignorados ({len(skipped)}): {preview}")
 
     print(f"[Local] Trials válidos analisados : {valid_count}")
 
     if best_number == -1:
         raise RuntimeError("Nenhum evaluations.npz válido encontrado nos trials.")
 
-    print(f"[Local] Melhor trial              : trial_{best_number}  "
-          f"(recompensa média no último checkpoint={best_reward:.6f}  "
-          f"timestep={best_last_timestep})")
+    print(
+        f"[Local] Melhor trial              : trial_{best_number}  "
+        f"(última recompensa média={best_reward:.6f},  timestep={best_last_timestep})"
+    )
 
     return LocalTrialResult(
         number=best_number,
@@ -329,56 +334,22 @@ def scan_trials_locally(trials_dir: str) -> LocalTrialResult:
     )
 
 
-def find_best_model_zip(trials_dir: str, trial_number: int) -> Optional[str]:
+def find_best_model_zip(trials_dir: Path, trial_number: int) -> Optional[Path]:
     """Procura o best_model.zip no diretório do trial."""
-    trial_path = Path(trials_dir) / f"trial_{trial_number}"
-    zip_path = trial_path / "best_model.zip"
-    if zip_path.is_file():
-        return str(zip_path)
-    return None
+    candidate = trials_dir / f"trial_{trial_number}" / "best_model.zip"
+    return candidate if candidate.is_file() else None
 
 
-def print_trial_summary(trial, hyperparams: dict):
-    """Exibe resumo do melhor trial. Aceita FrozenTrial (Optuna) ou LocalTrialResult."""
+def print_trial_summary(trial: LocalTrialResult, hyperparams: dict, normalize: bool):
+    """Exibe resumo do melhor trial no terminal."""
     sep = "─" * 60
-    is_local = isinstance(trial, LocalTrialResult)
-
     print(f"\n{'═' * 60}")
-    print(f"  MELHOR TRIAL: trial_{trial.number}")
+    print(f"  MELHOR TRIAL : trial_{trial.number}")
     print(f"{'═' * 60}")
-
-    if is_local:
-        print(f"  Modo                                : LOCAL (sem SQLite)")
-        print(f"  Recompensa média (último checkpoint): {trial.best_mean_reward:.6f}")
-        print(f"  Último timestep avaliado            : {trial.last_timestep}")
-        print(f"  Número de avaliações                : {trial.num_evaluations}")
-    else:
-        print(f"  Modo    : OPTUNA (SQLite)")
-        print(f"  Valor   : {trial.value:.6f}")
-        print(f"  Estado  : {trial.state.name}")
-        print(f"  Início  : {trial.datetime_start}")
-        print(f"  Fim     : {trial.datetime_complete}")
-        duration = (
-            (trial.datetime_complete - trial.datetime_start)
-            if trial.datetime_complete else None
-        )
-        if duration:
-            print(f"  Duração : {duration}")
-
-        if trial.params:
-            print(f"\n{sep}")
-            print("  PARÂMETROS AMOSTRADOS (Optuna)")
-            print(sep)
-            for k, v in sorted(trial.params.items()):
-                print(f"    {k:35s} = {v}")
-
-        if trial.user_attrs:
-            print(f"\n{sep}")
-            print("  ATRIBUTOS DE USUÁRIO (valores reais)")
-            print(sep)
-            for k, v in sorted(trial.user_attrs.items()):
-                print(f"    {k:35s} = {v}")
-
+    print(f"  Última recompensa média : {trial.best_mean_reward:.6f}")
+    print(f"  Último timestep         : {trial.last_timestep}")
+    print(f"  Número de avaliações    : {trial.num_evaluations}")
+    print(f"  Normalização detectada  : {normalize}")
     print(f"\n{sep}")
     print("  HIPERPARÂMETROS EXTRAÍDOS DO best_model.zip")
     print(sep)
@@ -387,17 +358,13 @@ def print_trial_summary(trial, hyperparams: dict):
     print()
 
 
-def append_yaml(output_path: str, yaml_block: str):
-    """Adiciona o bloco YAML ao arquivo, sem sobrescrever entradas existentes."""
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+def append_yaml(output_path: Path, yaml_block: str):
+    """Adiciona o bloco YAML ao arquivo sem sobrescrever entradas existentes."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    existing = path.read_text(encoding="utf-8") if path.is_file() else ""
-
+    existing = output_path.read_text(encoding="utf-8") if output_path.is_file() else ""
     separator = "\n\n" if existing.strip() else ""
-    new_content = existing + separator + yaml_block + "\n"
-
-    path.write_text(new_content, encoding="utf-8")
+    output_path.write_text(existing + separator + yaml_block + "\n", encoding="utf-8")
     print(f"[YAML] Hiperparâmetros adicionados em: {output_path}")
 
 
@@ -406,68 +373,47 @@ def append_yaml(output_path: str, yaml_block: str):
 def parse_args():
     parser = argparse.ArgumentParser(
         description=(
-            "Extrai o melhor trial de uma otimização Optuna e gera/atualiza o ppo.yml.\n\n"
-            "Modos (mutuamente exclusivos):\n"
-            "  Com SQLite  : --storage + --study-name (--trials-dir opcional)\n"
-            "  Sem SQLite  : --trials-dir + --env (obrigatórios)\n\n"
-            "O comentário do YAML é gerado automaticamente a partir dos dados disponíveis."
+            "Extrai o melhor trial de uma otimização local e gera/atualiza o ppo.yml.\n\n"
+            "Passa-se o diretório do experimento (<env_name>_<id>) gerado pelo\n"
+            "rl-baselines-zoo3. A pasta optimization/ é localizada automaticamente\n"
+            "dentro dele, assim como a detecção de normalização.\n\n"
+            "Exemplo:\n"
+            "  python extract_best_trial.py \\\n"
+            "      --exp-dir logs/ppo/FoodDelivery-medium-obj1-v1_3"
         ),
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    # Modo SQLite
-    sqlite_group = parser.add_argument_group("Modo SQLite (--storage + --study-name)")
-    sqlite_group.add_argument(
-        "--storage", "-s",
-        default=None,
-        help="URI do banco Optuna (ex: sqlite:///optuna_studies.db).",
-    )
-    sqlite_group.add_argument(
-        "--study-name",
-        default=None,
-        help=(
-            "Nome do estudo no banco Optuna (ex: ppo_medium_obj1).\n"
-            "Nome do estudo no banco Optuna (ex: meu_estudo_ppo_medium)."
-        ),
-    )
-
-    # Modo local
-    local_group = parser.add_argument_group("Modo local (sem SQLite)")
-    local_group.add_argument(
-        "--trials-dir", "-t",
-        default=None,
-        help=(
-            "Diretório com as pastas trial_N.\n"
-            "Obrigatório no modo local. No modo SQLite, usado para ler o best_model.zip\n"
-            "(opcional — sem ele os hiperparâmetros são inferidos dos params Optuna)."
-        ),
-    )
-    local_group.add_argument(
-        "--env",
+    parser.add_argument(
+        "--exp-dir", "-e",
         required=True,
-        help="ID completo do ambiente Gymnasium (ex: food_delivery_gym/FoodDelivery-medium-obj1-v0).",
+        help=(
+            "Diretório do experimento gerado pelo rl-baselines-zoo3.\n"
+            "Formato esperado: <log_folder>/<algo>/<env_name>_<id>\n"
+            "Exemplo: logs/ppo/FoodDelivery-medium-obj1-v1_3"
+        ),
     )
-
-    # Parâmetros de saída
-    out_group = parser.add_argument_group("Parâmetros de saída (opcionais)")
-    out_group.add_argument(
+    parser.add_argument(
+        "--env",
+        default=None,
+        help=(
+            "ID do ambiente Gymnasium (ex: FoodDelivery-medium-obj1-v1).\n"
+            "Se omitido, é inferido automaticamente a partir do nome do --exp-dir."
+        ),
+    )
+    parser.add_argument(
         "--n-timesteps",
         type=int,
         default=18_000_000,
         help="Timesteps para o treinamento final (padrão: 18000000).",
     )
-    out_group.add_argument(
+    parser.add_argument(
         "--n-envs",
         type=int,
         default=4,
         help="Número de ambientes paralelos (padrão: 4).",
     )
-    out_group.add_argument(
-        "--normalize",
-        action="store_true",
-        help="Adiciona 'normalize: true' no YAML e menciona no comentário gerado.",
-    )
-    out_group.add_argument(
+    parser.add_argument(
         "--output-dir",
         default="hyperparams/best_params_for_food_delivery_gym",
         help=(
@@ -479,97 +425,72 @@ def parse_args():
     return parser.parse_args()
 
 
-def validate_args(args):
-    """Valida a combinação de argumentos e retorna o modo de operação."""
-    use_optuna = bool(args.storage or args.study_name)
-
-    if use_optuna:
-        if not args.storage:
-            raise SystemExit("[Erro] --storage é obrigatório quando --study-name é fornecido.")
-        if not args.study_name:
-            raise SystemExit("[Erro] --study-name é obrigatório quando --storage é fornecido.")
-    else:
-        if not args.trials_dir:
-            raise SystemExit(
-                "[Erro] No modo local (sem SQLite), --trials-dir é obrigatório.\n"
-                "       Use --storage e --study-name para o modo Optuna."
-            )
-
-    return use_optuna
-
-
 def main():
     args = parse_args()
-    use_optuna = validate_args(args)
 
-    # 1. Versão do pacote → subdiretório de saída
+    exp_dir = Path(args.exp_dir).resolve()
+    if not exp_dir.is_dir():
+        raise SystemExit(f"[Erro] Diretório do experimento não encontrado: {exp_dir}")
+
+    # Localiza a pasta optimization/
+    trials_dir = exp_dir / "optimization"
+    if not trials_dir.is_dir():
+        raise SystemExit(
+            f"[Erro] Pasta 'optimization/' não encontrada dentro de '{exp_dir}'.\n"
+            "       Verifique se a otimização de hiperparâmetros foi executada neste diretório."
+        )
+
+    # Infere env_id
+    env_id = args.env or infer_env_id(exp_dir)
+
+    # Versão do pacote → subdiretório de saída
     version = get_food_delivery_gym_version()
     version_dir = version_to_dir(version)
-    output_dir = os.path.join(args.output_dir, version_dir)
-    output_yaml = os.path.join(output_dir, "ppo.yml")
+    output_yaml = Path(args.output_dir) / version_dir / "ppo.yml"
 
-    print(f"[Info] Versão do food_delivery_gym : {version}")
-    print(f"[Info] Subdiretório de saída        : {output_dir}")
-    print(f"[Info] Arquivo YAML de destino      : {output_yaml}")
-    print(f"[Info] Modo de análise              : {'Optuna (SQLite)' if use_optuna else 'Local (evaluations.npz)'}")
-
-    # 2. Identifica o melhor trial
-    if use_optuna:
-        study = load_study(args.storage, args.study_name)
-        completed = [t for t in study.trials if t.value is not None]
-        num_trials = len(completed)
-        print(f"[Optuna] Total de trials concluídos : {num_trials}")
-        best_trial = study.best_trial
-        print(f"[Optuna] Melhor trial               : trial_{best_trial.number}  (valor={best_trial.value:.6f})")
-        # Timesteps por trial = valor do último timestep no evaluations.npz (se disponível)
-        n_timesteps_per_trial = best_trial.last_step or 0
-    else:
-        best_trial = scan_trials_locally(args.trials_dir)
-        num_trials = best_trial.num_valid_trials
-        n_timesteps_per_trial = best_trial.last_timestep
-
-    # 3. env_id fornecido diretamente pelo usuário
-    env_id = args.env
+    print(f"[Info] Diretório do experimento     : {exp_dir}")
+    print(f"[Info] Pasta de trials              : {trials_dir}")
     print(f"[Info] env_id                       : {env_id}")
+    print(f"[Info] Versão do food_delivery_gym  : {version}")
+    print(f"[Info] Arquivo YAML de destino      : {output_yaml}")
 
-    # 4. Extrai hiperparâmetros do best_model.zip do melhor trial
-    trials_dir = args.trials_dir
-    zip_path = find_best_model_zip(trials_dir, best_trial.number) if trials_dir else None
+    # Detecta normalização automaticamente
+    normalize = detect_normalization(exp_dir)
 
+    # Identifica o melhor trial
+    best_trial = scan_trials_locally(trials_dir)
+    num_trials = best_trial.num_valid_trials
+    n_timesteps_per_trial = best_trial.last_timestep
+
+    # Extrai hiperparâmetros do best_model.zip
+    zip_path = find_best_model_zip(trials_dir, best_trial.number)
     if zip_path is None:
-        if use_optuna:
-            print(
-                f"\n[AVISO] best_model.zip não encontrado "
-                + (f"em '{trials_dir}/trial_{best_trial.number}/'" if trials_dir else "(--trials-dir não fornecido)")
-                + ".\n         Os hiperparâmetros serão inferidos dos parâmetros amostrados pelo Optuna."
-            )
-            hyperparams = {**best_trial.params, **best_trial.user_attrs}
-        else:
-            raise FileNotFoundError(
-                f"best_model.zip não encontrado em '{trials_dir}/trial_{best_trial.number}/'. "
-                "Sem o SQLite e sem o best_model.zip não é possível extrair os hiperparâmetros."
-            )
-    else:
-        print(f"[Info] Lendo hiperparâmetros de     : {zip_path}")
-        model_data = load_model_data_from_zip(zip_path)
-        hyperparams = extract_hyperparams_from_model_data(model_data)
-        # Usa o num_timesteps real do modelo como referência para o comentário
-        if "num_timesteps" in hyperparams:
-            n_timesteps_per_trial = hyperparams.pop("num_timesteps")
+        raise FileNotFoundError(
+            f"best_model.zip não encontrado em '{trials_dir}/trial_{best_trial.number}/'.\n"
+            "Certifique-se de que o TrialEvalCallback salvou o melhor modelo."
+        )
 
-    # 5. Gera o comentário automaticamente
-    comment = build_comment(n_timesteps_per_trial, num_trials, args.normalize)
+    print(f"[Info] Lendo hiperparâmetros de     : {zip_path}")
+    model_data = load_model_data_from_zip(str(zip_path))
+    hyperparams = extract_hyperparams_from_model_data(model_data)
 
-    # 6. Exibe resumo na tela
-    print_trial_summary(best_trial, hyperparams)
+    # Usa num_timesteps real do modelo como referência para o comentário
+    if "num_timesteps" in hyperparams:
+        n_timesteps_per_trial = hyperparams.pop("num_timesteps")
 
-    # 7. Gera o bloco YAML
+    # Gera o comentário
+    comment = build_comment(n_timesteps_per_trial, num_trials, normalize)
+
+    # Exibe resumo
+    print_trial_summary(best_trial, hyperparams, normalize)
+
+    # Gera o bloco YAML
     yaml_block = build_yaml_block(
         env_id=env_id,
         hyperparams=hyperparams,
         n_timesteps=args.n_timesteps,
         n_envs=args.n_envs,
-        normalize=args.normalize,
+        normalize=normalize,
         comment=comment,
         num_trials=num_trials,
         best_trial_number=best_trial.number,
@@ -581,7 +502,7 @@ def main():
     print(yaml_block)
     print("─" * 60)
 
-    # 8. Adiciona ao arquivo ppo.yml (sem sobrescrever)
+    # Adiciona ao ppo.yml sem sobrescrever
     append_yaml(output_yaml, yaml_block)
     print(f"\n[OK] Concluído.")
 

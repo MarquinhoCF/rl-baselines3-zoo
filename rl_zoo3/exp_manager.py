@@ -131,7 +131,6 @@ class ExperimentManager:
         self.env_wrapper: Optional[Callable] = None
         self.frame_stack = None
         self.seed = seed
-        self.optimization_log_path = optimization_log_path
 
         self.vec_env_class = {"dummy": DummyVecEnv, "subproc": SubprocVecEnv}[vec_env_type]
         # Override
@@ -196,6 +195,12 @@ class ExperimentManager:
             self.log_path, f"{self.env_name}_{get_latest_run_id(self.log_path, self.env_name) + 1}{uuid_str}"
         )
         self.params_path = f"{self.save_path}/{self.env_name}"
+        
+        # Organiza logs de otimização
+        if self.optimize_hyperparameters and optimization_log_path is None:
+            self.optimization_log_path = os.path.join(self.save_path, "optimization")
+        else:
+            self.optimization_log_path = optimization_log_path
 
     def setup_experiment(self) -> Optional[tuple[BaseAlgorithm, dict[str, Any]]]:
         """
@@ -951,7 +956,8 @@ class ExperimentManager:
             f"-{self.sampler}-{self.pruner}_{int(time.time())}"
         )
 
-        log_path = os.path.join(self.log_folder, self.algo, report_name)
+        # Organiza path dos reports
+        log_path = os.path.join(self.save_path, report_name)
 
         if self.verbose:
             print(f"Writing report to {log_path}")

@@ -590,197 +590,197 @@ Walker2d-v4:
   policy: 'MultiInputPolicy'
   normalize: true
 
-food_delivery_gym/FoodDelivery-complex-obj1-v0:
+FoodDelivery-complex-obj1-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj10-v0:
+FoodDelivery-complex-obj10-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj11-v0:
+FoodDelivery-complex-obj11-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj12-v0:
+FoodDelivery-complex-obj12-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj13-v0:
+FoodDelivery-complex-obj13-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj2-v0:
+FoodDelivery-complex-obj2-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj3-v0:
+FoodDelivery-complex-obj3-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj4-v0:
+FoodDelivery-complex-obj4-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj5-v0:
+FoodDelivery-complex-obj5-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj6-v0:
+FoodDelivery-complex-obj6-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj7-v0:
+FoodDelivery-complex-obj7-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj8-v0:
+FoodDelivery-complex-obj8-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex-obj9-v0:
+FoodDelivery-complex-obj9-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj1-v0:
+FoodDelivery-complex_non_homogeneous-obj1-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj10-v0:
+FoodDelivery-complex_non_homogeneous-obj10-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj11-v0:
+FoodDelivery-complex_non_homogeneous-obj11-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj12-v0:
+FoodDelivery-complex_non_homogeneous-obj12-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj13-v0:
+FoodDelivery-complex_non_homogeneous-obj13-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj2-v0:
+FoodDelivery-complex_non_homogeneous-obj2-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj3-v0:
+FoodDelivery-complex_non_homogeneous-obj3-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj4-v0:
+FoodDelivery-complex_non_homogeneous-obj4-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj5-v0:
+FoodDelivery-complex_non_homogeneous-obj5-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj6-v0:
+FoodDelivery-complex_non_homogeneous-obj6-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj7-v0:
+FoodDelivery-complex_non_homogeneous-obj7-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj8-v0:
+FoodDelivery-complex_non_homogeneous-obj8-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-complex_non_homogeneous-obj9-v0:
+FoodDelivery-complex_non_homogeneous-obj9-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj1-v0:
+FoodDelivery-initial-obj1-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj10-v0:
+FoodDelivery-initial-obj10-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj11-v0:
+FoodDelivery-initial-obj11-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj12-v0:
+FoodDelivery-initial-obj12-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj13-v0:
+FoodDelivery-initial-obj13-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj2-v0:
+FoodDelivery-initial-obj2-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj3-v0:
+FoodDelivery-initial-obj3-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj4-v0:
+FoodDelivery-initial-obj4-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj5-v0:
+FoodDelivery-initial-obj5-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj6-v0:
+FoodDelivery-initial-obj6-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj7-v0:
+FoodDelivery-initial-obj7-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj8-v0:
+FoodDelivery-initial-obj8-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-initial-obj9-v0:
+FoodDelivery-initial-obj9-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj1-v0:
+FoodDelivery-medium-obj1-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj10-v0:
+FoodDelivery-medium-obj10-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj11-v0:
+FoodDelivery-medium-obj11-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj12-v0:
+FoodDelivery-medium-obj12-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj13-v0:
+FoodDelivery-medium-obj13-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj2-v0:
+FoodDelivery-medium-obj2-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj3-v0:
+FoodDelivery-medium-obj3-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj4-v0:
+FoodDelivery-medium-obj4-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj5-v0:
+FoodDelivery-medium-obj5-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj6-v0:
+FoodDelivery-medium-obj6-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj7-v0:
+FoodDelivery-medium-obj7-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj8-v0:
+FoodDelivery-medium-obj8-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-medium-obj9-v0:
+FoodDelivery-medium-obj9-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj1-v0:
+FoodDelivery-teste_dynamic_route-obj1-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj10-v0:
+FoodDelivery-teste_dynamic_route-obj10-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj11-v0:
+FoodDelivery-teste_dynamic_route-obj11-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj12-v0:
+FoodDelivery-teste_dynamic_route-obj12-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj13-v0:
+FoodDelivery-teste_dynamic_route-obj13-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj2-v0:
+FoodDelivery-teste_dynamic_route-obj2-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj3-v0:
+FoodDelivery-teste_dynamic_route-obj3-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj4-v0:
+FoodDelivery-teste_dynamic_route-obj4-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj5-v0:
+FoodDelivery-teste_dynamic_route-obj5-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj6-v0:
+FoodDelivery-teste_dynamic_route-obj6-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj7-v0:
+FoodDelivery-teste_dynamic_route-obj7-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj8-v0:
+FoodDelivery-teste_dynamic_route-obj8-v1:
   <<: *defaults
 
-food_delivery_gym/FoodDelivery-teste_dynamic_route-obj9-v0:
+FoodDelivery-teste_dynamic_route-obj9-v1:
   <<: *defaults
