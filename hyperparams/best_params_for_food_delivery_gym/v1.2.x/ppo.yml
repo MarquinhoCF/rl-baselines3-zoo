@@ -33,3 +33,39 @@ FoodDelivery-medium-obj3-v1:
   max_grad_norm: 1.843020867213931
   policy_kwargs: "dict(net_arch=dict(pi=[64], vf=[64]), activation_fn=nn.ReLU)"
   normalize: true
+
+# Reutilizando a otimização de hiperparâmetros do ambiente com cenário médio e com objetivo 3, com normalização e 1.000.000 de passos por trial, 200 trials (melhor: trial_171)
+FoodDelivery-medium_driver_cap_4-obj3-v1:
+  n_timesteps: 18000000
+  policy: 'MultiInputPolicy'
+  n_envs: 4
+  learning_rate: 5.3891499236206624e-05
+  ent_coef: 0.00013874058295990755
+  clip_range: 0.3
+  n_steps: 256
+  batch_size: 64
+  n_epochs: 20
+  vf_coef: 0.5
+  gamma: 0.9827642624796085
+  gae_lambda: 0.9684659153686759
+  max_grad_norm: 1.843020867213931
+  policy_kwargs: "dict(net_arch=dict(pi=[64], vf=[64]), activation_fn=nn.ReLU)"
+  normalize: true
+
+# Otimização de hiperparâmetros — objetivo 13, 1.000.000 de passos por trial, 118 trials (melhor: trial_96)
+FoodDelivery-medium-obj13-v1:
+  n_timesteps: 18000000
+  policy: 'MultiInputPolicy'
+  n_envs: 4
+  learning_rate: 3.426041032863036e-05
+  ent_coef: 0.060681807757790834
+  clip_range: 0.4
+  n_steps: 4096
+  batch_size: 64
+  n_epochs: 20
+  vf_coef: 0.5
+  gamma: 0.9855234024982498
+  gae_lambda: 0.938880481693351
+  max_grad_norm: 0.3547558454331889
+  policy_kwargs: "dict(net_arch=dict(pi=[256, 256], vf=[256, 256]), activation_fn=nn.ReLU)"
+  normalize: true
