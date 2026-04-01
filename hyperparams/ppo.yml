@@ -785,6 +785,45 @@ FoodDelivery-medium_driver_cap_4-obj8-v1:
 FoodDelivery-medium_driver_cap_4-obj9-v1:
   <<: *defaults
 
+FoodDelivery-simple-obj1-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj10-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj11-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj12-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj13-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj2-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj3-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj4-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj5-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj6-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj7-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj8-v1:
+  <<: *defaults
+
+FoodDelivery-simple-obj9-v1:
+  <<: *defaults
+
 FoodDelivery-teste_dynamic_route-obj1-v1:
   <<: *defaults
 
