@@ -43,3 +43,5 @@ env.bak/
 venv.bak/
 
 optuna_studies.db
+
+.python-version
